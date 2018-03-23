@@ -15,8 +15,9 @@ Car::Car(int _id)
 char Car::driving()
 {
 	//cout<<"Car "<<id<<" is driving.\n";
-	return '>';
 	laps++;
+	return '>';
+	
 	//printw("->");
 }
 
