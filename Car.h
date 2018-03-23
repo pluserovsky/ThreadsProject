@@ -18,7 +18,7 @@ class Car
 	Car(int _id);
 	void run();
 	char driving();
-	char cooling();
+	char pitstop();
 	int getID();
 	int getLaps();
 };

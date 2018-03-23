@@ -17,7 +17,7 @@ char Car::driving()
 	return '>';
 }
 
-char Car::cooling()
+char Car::pitstop()
 {
 	return '|';
 }

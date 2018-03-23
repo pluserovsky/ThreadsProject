@@ -6,6 +6,9 @@ int amountOfCars = 2;
 int amountOfLaps = 2;
 bool finish = false;
 
+thread *t;
+Car *cars;
+
 void run(Car car)
 {
 	for (int i = 0; i < amountOfLaps; i++)
@@ -22,16 +25,19 @@ void run(Car car)
 				refresh();
 				break;
 			}
-			usleep(rand() % 1000000);
-			move(car.getID(), i + 40);
-			printw("%c", car.cooling());
-			usleep(rand() % 1000000);
+			if (rand() % 100 < 30)
+			{
+				usleep(rand() % 5000000);
+				move(car.getID(), i + 60);
+				printw("%c", car.pitstop());
+			}
 			refresh();
 		}
 	}
 }
 
-bool checkParameters(int argc, char **argv){
+bool checkParameters(int argc, char **argv)
+{
 	if (argc != 3)
 	{
 		printf("run parameters: [amountOfCars] [amountOfLaps]\n");
@@ -48,31 +54,27 @@ bool checkParameters(int argc, char **argv){
 		return 0;
 	}
 
-	if (amountOfLaps > 20)
+	if (amountOfLaps > 30)
 	{
-		printf("Max amount of laps is 20!\n");
+		printf("Max amount of laps is 30!\n");
 		endwin();
 		return 0;
 	}
 	return 1;
 }
 
-int main(int argc, char **argv)
+void startRace()
 {
-	initscr();
-	srand(time(NULL));
-	if(!checkParameters(argc,argv)) return 0;
-
-	thread t[amountOfCars];
-	Car *cars = new Car[amountOfCars];
-	refresh();
-
 	for (int i = 0; i < amountOfCars; i++)
 	{
 		move(i, 0);
 		printw("Car %i:", i);
-		move(i, 30);
-		printw("stop's:", i);
+		move(i, 50);
+		printw("pitstop's:", i);
+	}
+
+	for (int i = 0; i < amountOfCars; i++)
+	{
 		Car car(i);
 		cars[i] = car;
 		t[i] = thread(run, car);
@@ -82,7 +84,23 @@ int main(int argc, char **argv)
 	{
 		t[i].join();
 	}
+}
+int main(int argc, char **argv)
+{
+	initscr();
+	srand(time(NULL));
+	if (!checkParameters(argc, argv))
+		return 0;
 
+	t = new thread[amountOfCars];
+	cars = new Car[amountOfCars];
+	refresh();
+	startRace();
+	for (int i = 0; i < amountOfCars; i++)
+	{
+		cars[i].~Car();
+	}
+	delete cars, t;
 	getch();
 	endwin();
 
