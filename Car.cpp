@@ -2,30 +2,24 @@
 
 Car::Car()
 {
-	//cout << "X" << endl;
 	laps = 0;
 }
 
 Car::Car(int _id)
 {
-	id=_id;
+	id = _id;
 	laps = 0;
 }
 
 char Car::driving()
 {
-	//cout<<"Car "<<id<<" is driving.\n";
 	laps++;
 	return '>';
-	
-	//printw("->");
 }
 
 char Car::cooling()
 {
-	//cout<<"Car "<<id<<" is cooling.\n";
 	return '|';
-	//printw("|");
 }
 
 int Car::getID()
@@ -36,4 +30,3 @@ int Car::getLaps()
 {
 	return laps;
 }
-

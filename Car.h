@@ -7,13 +7,13 @@
 
 using namespace std;
 
-class Car{
+class Car
+{
 
-int id;
-int laps;
+	int id;
+	int laps;
 
-public:
-
+  public:
 	Car();
 	Car(int _id);
 	void run();
@@ -21,5 +21,4 @@ public:
 	char cooling();
 	int getID();
 	int getLaps();
-
 };
