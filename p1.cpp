@@ -1,29 +1,52 @@
-#include <iostream>
-#include <pthread.h>
-#include <stdio.h>
-#include <ncurses.h>
+#include "Car.h"
 
 using namespace std;
 
-void *Hello(void *arg){
-  printw("ja to jo je wontek\n");
-refresh();
-	return NULL;
+int amountOfCars = 2;
+int amountOfLaps = 10;
+
+void run(Car car)
+{
+	move(car.getID(),0);
+	printw("Car %i:", car.getID());
+	for(int i=0; i<amountOfLaps;i++)
+	{
+		move(car.getID(),i+7);
+		printw("%c", car.driving());
+		if(car.getLaps() == 5) {
+			printw("Car %i won!", car.getID());
+		}
+		usleep(rand() % 500000);
+		//printw("%c", car.cooling());
+		usleep(rand() % 500000);
+		refresh();
+	}
 }
-int main(void){
-  initscr();
- pthread_t moj;
-if(pthread_create(&moj,NULL,Hello,NULL)){
-  printw("cos si zesralo\n"); 
-refresh();
-}
-if(pthread_join(moj,NULL)){
-	cout<< "nie umia dojsc\n"<<endl; 
+
+int main(int argc, char **argv)
+{
+	initscr();
+	srand(time(NULL));
+	thread t[amountOfCars];
+	Car *cars = new Car[amountOfCars];
+	refresh();
+	for(int i=0; i<amountOfCars;i++)
+	{
+		Car car(i);
+		cars[i] = car;
+		t[i] = thread(run,car);
+	}
 	
-}
- printw("i po wszystkim\n");
-refresh();
-getch();
- endwin();
-    return 0; 
+	for(int i=0; i<amountOfCars;i++)
+	{
+		t[i].join();
+	}
+	for(int i=0; i<amountOfCars;i++)
+	{
+		t[i].~thread();
+	}
+	getch();
+	endwin();
+	
+	return 0;
 }
