@@ -2,106 +2,74 @@
 
 using namespace std;
 
-int amountOfCars = 2;
-int amountOfLaps = 2;
+
+int amountOfCars = 5;
+mutex carMutex, checkMutex;
 bool finish = false;
 
-thread *t;
-Car *cars;
 
 void run(Car car)
 {
-	for (int i = 0; i < amountOfLaps; i++)
+	while (!finish)
 	{
-		if (!finish)
+		if (getch() == 'q')
 		{
-			move(car.getID(), i + 8);
-			printw("%c", car.driving());
-
-			if (car.getLaps() == amountOfLaps)
-			{
-				printw(" Car %i won!", car.getID());
-				finish = true;
-				refresh();
-				break;
-			}
-			if (rand() % 100 < 30)
-			{
-				usleep(rand() % 5000000);
-				move(car.getID(), i + 60);
-				printw("%c", car.pitstop());
-			}
-			refresh();
+			finish = true;
+			break;
 		}
+		car.driving();
+		checkMutex.lock();
+		if (car.getPriority() > 2)
+		{
+			carMutex.lock();
+			car.setPriorityFlag(true);
+		}
+		checkMutex.unlock();
+		car.signalPitstop(&carMutex);
+		car.refueling();
 	}
 }
 
-bool checkParameters(int argc, char **argv)
+int main(int argc, char **argv)
 {
-	if (argc != 3)
-	{
-		printf("run parameters: [amountOfCars] [amountOfLaps]\n");
-		endwin();
-		return 0;
-	}
-	amountOfCars = atoi(argv[1]);
-	amountOfLaps = atoi(argv[2]);
-
-	if (amountOfCars > 15)
-	{
-		printf("Max amount of cars is 15!\n");
-		endwin();
-		return 0;
-	}
-
-	if (amountOfLaps > 30)
-	{
-		printf("Max amount of laps is 30!\n");
-		endwin();
-		return 0;
-	}
-	return 1;
-}
-
-void startRace()
-{
-	for (int i = 0; i < amountOfCars; i++)
-	{
-		move(i, 0);
-		printw("Car %i:", i);
-		move(i, 50);
-		printw("pitstop's:", i);
-	}
+	srand(time(NULL));
+	thread *t = new thread[amountOfCars];
+	Car *cars = new Car[amountOfCars];
+	Pitstop *pitstops = new Pitstop[amountOfCars];
+	initscr();
+	nodelay(stdscr, TRUE);
+	start_color();
 
 	for (int i = 0; i < amountOfCars; i++)
 	{
 		Car car(i);
 		cars[i] = car;
-		t[i] = thread(run, car);
+
+		Pitstop fork(i);
+		pitstops[i] = fork;
+
+		cars[i].setPrevPitstop(&pitstops[i]);
+		if (i > 0)
+		{
+			cars[i].setNextPitstop(&pitstops[i - 1]);
+		}
+		if (i == amountOfCars - 1)
+		{
+			cars[0].setNextPitstop(&pitstops[amountOfCars - 1]);
+		}
+
+		mvprintw(2 + i * 2, 0, "%s: %d", "Car", i);
 	}
+	mvprintw(0, 14, "%s %s %s", "Actual state   Fuel (%)", " Pitstops", " Laps");
+	refresh();
+
+	for (int i = 0; i < amountOfCars; i++)
+		t[i] = thread(run, cars[i]);
 
 	for (int i = 0; i < amountOfCars; i++)
 	{
 		t[i].join();
 	}
-}
-int main(int argc, char **argv)
-{
-	initscr();
-	srand(time(NULL));
-	if (!checkParameters(argc, argv))
-		return 0;
-
-	t = new thread[amountOfCars];
-	cars = new Car[amountOfCars];
-	refresh();
-	startRace();
-	for (int i = 0; i < amountOfCars; i++)
-	{
-		cars[i].~Car();
-	}
-	delete cars, t;
-	getch();
 	endwin();
 
 	return 0;
