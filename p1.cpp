@@ -19,10 +19,10 @@ void run(Car car)
 		}
 		car.driving();
 		checkMutex.lock();
-		if (car.getPriority() > 2)
+		if (car.getWarning() > 2)
 		{
 			carMutex.lock();
-			car.setPriorityFlag(true);
+			car.setPitstopFlag(true);
 		}
 		checkMutex.unlock();
 		car.signalPitstop(&carMutex);
@@ -45,8 +45,8 @@ int main(int argc, char **argv)
 		Car car(i);
 		cars[i] = car;
 
-		Pitstop fork(i);
-		pitstops[i] = fork;
+		Pitstop pitstop(i);
+		pitstops[i] = pitstop;
 
 		cars[i].setPrevPitstop(&pitstops[i]);
 		if (i > 0)

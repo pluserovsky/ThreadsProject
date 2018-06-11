@@ -18,11 +18,7 @@ void Car::refueling()
 {
 	pitstops++;
 	actualState = "refueling";
-	mu.lock();
-	if (pitstops > levelPriority)
-		levelPriority = pitstops;
-	priority = levelPriority - levelPriority;
-	mu.unlock();
+	fuelWarning = 0;;
 	for (int i = 0; i < 10; i++)
 	{
 		refreshStatus(i * 10);
@@ -40,9 +36,10 @@ void Car::driving()
 {
 	laps++;
 	actualState = "driving";
+	fuelWarning++;
 	for (int i = 0; i < 10; i++)
 	{
-		refreshStatus(i * 10);
+		refreshStatus(100-(i * 10));
 		usleep(rand() % 400000 + 300000);
 	}
 }
@@ -69,13 +66,13 @@ void Car::signalPitstop(mutex *mutx)
 	while (waitForRefueling)
 	{
 		unique_lock<mutex> locker(mu);
-		cond.wait(locker, [&] { return twoPitstopsFull(); });
-		if (twoPitstopsFull())
+		cond.wait(locker, [&] { return twoPitstopsEmpty(); });
+		if (twoPitstopsEmpty())
 		{
-			if (priorityFlag)
+			if (pitstopFlag)
 			{
 				mutx->unlock();
-				priorityFlag = false;
+				pitstopFlag = false;
 			}
 			nextPitstop->setAvailable(false);
 			prevPitstop->setAvailable(false);
@@ -85,7 +82,7 @@ void Car::signalPitstop(mutex *mutx)
 	}
 }
 
-bool Car::twoPitstopsFull()
+bool Car::twoPitstopsEmpty()
 {
 	return nextPitstop->getAvailable() && prevPitstop->getAvailable();
 }
@@ -95,17 +92,12 @@ int Car::getID()
 	return id;
 }
 
-void Car::setPrevPitstop(Pitstop *Left)
+void Car::setPrevPitstop(Pitstop *Prev)
 {
-	prevPitstop = Left;
+	prevPitstop = Prev;
 }
 
-void Car::setNextPitstop(Pitstop *Right)
+void Car::setNextPitstop(Pitstop *Next)
 {
-	nextPitstop = Right;
-}
-
-bool Car::needFuel()
-{
-	return waitForRefueling;
+	nextPitstop = Next;
 }

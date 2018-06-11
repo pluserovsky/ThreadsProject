@@ -10,15 +10,15 @@
 
 using namespace std;
 
-static int levelPriority = 0;
+static int fuelWarning = 0;
 
 class Car
 {
 	bool waitForRefueling = false;
-	int id, pitstops = 0, laps = 0, priority = 0;
+	int id, pitstops = 0, laps = 0, warning = 0;
 	Pitstop *prevPitstop, *nextPitstop;
 	Pitstop *pit;
-	bool priorityFlag = false;
+	bool pitstopFlag = false;
 	string actualState = "driving";
 
   public:
@@ -34,9 +34,8 @@ class Car
 	void setNextPitstop(Pitstop *Next);
 	void simulatingLife();
 	void signalPitstop(mutex *mutx);
-	bool needFuel();
-	bool twoPitstopsFull();
+	bool twoPitstopsEmpty();
 	void refreshStatus(int percent);
-	int getPriority() { return priority; }
-	void setPriorityFlag(bool _priority) { priorityFlag = _priority; }
+	int getWarning() { return warning; }
+	void setPitstopFlag(bool _priority) { pitstopFlag = _priority; }
 };
