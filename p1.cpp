@@ -2,7 +2,7 @@
 
 using namespace std;
 
-int amountOfCars = 3;
+int amountOfCars = 5;
 mutex carMutex, checkMutex;
 bool finish = false;
 char **cityTable;
@@ -10,7 +10,7 @@ int **carTable;
 fstream file;
 int a, b, c, di;
 
-void drawCity()
+void drawMap()
 {
 
 	start_color();
@@ -125,8 +125,14 @@ void run(Car car)
 			car.setPitstopFlag(true);
 		}
 		checkMutex.unlock();
-		car.signalPitstop(&carMutex);
-		car.refueling();
+		//if (car.getY() == 4 && car.getX() == 19)
+		//{
+		//if (rand() % 5 + 1 < 3)
+		{
+			car.signalPitstop(&carMutex);
+			car.refueling();
+		}
+		//}
 	}
 }
 
@@ -140,7 +146,7 @@ int main(int argc, char **argv)
 	curs_set(0);
 	nodelay(stdscr, TRUE);
 	readMapFromFile();
-	drawCity();
+	drawMap();
 
 	Pitstop pitstop1(1);
 	pitstops[1] = pitstop1;

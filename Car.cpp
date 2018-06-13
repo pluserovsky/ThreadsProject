@@ -60,13 +60,37 @@ void Car::generateTrace()
 	}
 }
 
+void Car::generatePitstopTrace()
+{
+	pitstopTrace.push_back({4, 20, true});
+	pitstopTrace.push_back({5, 22, true});
+	pitstopTrace.push_back({6, 23, true});
+	pitstopTrace.push_back({7, 24, true});
+	pitstopTrace.push_back({8, 25, true});
+	pitstopTrace.push_back({9, 26, true});
+	pitstopTrace.push_back({10, 27, true});
+	for (int i = 28; i < 62; i++)
+	{
+		trace.push_back({10, i, true});
+	}
+	pitstopTrace.push_back({10, 62, true});
+	pitstopTrace.push_back({9, 63, true});
+	pitstopTrace.push_back({8, 64, true});
+	pitstopTrace.push_back({6, 65, true});
+	pitstopTrace.push_back({5, 66, true});
+	pitstopTrace.push_back({4, 67, true});
+	pitstopTrace.push_back({4, 68, true});
+}
+
 void Car::refueling()
 {
 	pitstops++;
 	actualState = "refueling";
 	fuelWarning = 0;
+
 	for (int i = 0; i < 10; i++)
 	{
+
 		refreshStatus(i * 10);
 		usleep(rand() % 400000 + 200000);
 	}
@@ -75,6 +99,7 @@ void Car::refueling()
 	nextPitstop->setAvailable(true);
 	cond.notify_all();
 	locker.unlock();
+	actualState = "driving";
 	refreshStatus(0);
 }
 
@@ -89,8 +114,8 @@ void Car::driving()
 		mu.lock();
 		attron(COLOR_PAIR(4));
 		mvprintw(this->y, this->x, "%s", " ");
-		mvprintw(12, 35, "%s", " ");
-		mvprintw(12, 52, "%s", " ");
+		//mvprintw(12, 35, "%s", " ");
+		//mvprintw(12, 52, "%s", " ");
 		attroff(COLOR_PAIR(4));
 		//refresh();
 		mu.unlock();
@@ -106,20 +131,27 @@ void Car::refreshStatus(int percent)
 	mu.lock();
 	if (this->actualState == "driving")
 	{
+		attron(COLOR_PAIR(4));
+		//mvprintw(this->y, this->x, "%s", " ");
+		mvprintw(12, 35 + this->id, "%s", " ");
+		//mvprintw(12, 52, "%s", " ");
+		attroff(COLOR_PAIR(4));
 		attron(COLOR_PAIR(color));
 		mvprintw(this->y, this->x, "%d", this->id);
 		attroff(COLOR_PAIR(color));
 	}
 	if (this->actualState == "refueling")
 	{
+		//mvprintw(this->y, this->x, "%s", " ");
 		attron(COLOR_PAIR(color));
-		mvprintw(12, 35, "%d", this->id);
+		mvprintw(12, 35 + this->id, "%d", this->id);
 		attroff(COLOR_PAIR(color));
 	}
 	if (this->actualState == "in pitlane")
 	{
+		//mvprintw(this->y, this->x, "%s", " ");
 		attron(COLOR_PAIR(color));
-		mvprintw(12, 52, "%d", this->id);
+		mvprintw(12, 52 + this->id, "%d", this->id);
 		attroff(COLOR_PAIR(color));
 	}
 
@@ -139,8 +171,10 @@ void Car::signalPitstop(mutex *mutx)
 	refreshStatus(0);
 	usleep(100000);
 	waitForRefueling = true;
+
 	while (waitForRefueling)
 	{
+
 		unique_lock<mutex> locker(mu);
 		cond.wait(locker, [&] { return twoPitstopsEmpty(); });
 		if (twoPitstopsEmpty())
@@ -156,6 +190,14 @@ void Car::signalPitstop(mutex *mutx)
 			locker.unlock();
 		}
 	}
+	mu.lock();
+	attron(COLOR_PAIR(4));
+	//mvprintw(this->y, this->x, "%s", " ");
+	//mvprintw(12, 35+ this->id, "%s", " ");
+	mvprintw(12, 52 + this->id, "%s", " ");
+	attroff(COLOR_PAIR(4));
+	//refresh();
+	mu.unlock();
 }
 
 bool Car::twoPitstopsEmpty()
@@ -166,6 +208,14 @@ bool Car::twoPitstopsEmpty()
 int Car::getID()
 {
 	return id;
+}
+int Car::getY()
+{
+	return y;
+}
+int Car::getX()
+{
+	return x;
 }
 
 void Car::setPrevPitstop(Pitstop *Prev)

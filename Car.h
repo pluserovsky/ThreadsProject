@@ -31,7 +31,9 @@ class Car
 	string actualState = "driving";
 	short int color;
 	vector<Coordinate> trace;
+	vector<Coordinate> pitstopTrace;
 	void generateTrace();
+	void generatePitstopTrace();
 
   public:
 	Car();
@@ -40,6 +42,8 @@ class Car
 	void driving();
 	void refueling();
 	int getID();
+	int getY();
+	int getX();
 	Pitstop getPrevPitstop();
 	Pitstop getRightPitstop();
 	void setPrevPitstop(Pitstop *Prev);
