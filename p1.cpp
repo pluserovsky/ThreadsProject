@@ -2,7 +2,7 @@
 
 using namespace std;
 
-int amountOfCars = 5;
+int amountOfCars = 9, lapsAmount = 50;
 mutex carMutex, checkMutex;
 bool finish = false;
 char **cityTable;
@@ -23,6 +23,7 @@ void drawMap()
 	init_pair(6, COLOR_WHITE, COLOR_BLUE);
 	init_pair(7, COLOR_WHITE, COLOR_MAGENTA);
 	init_pair(8, COLOR_WHITE, COLOR_CYAN);
+	init_pair(9, COLOR_RED, COLOR_BLUE);
 
 	bkgd(COLOR_PAIR(1));
 
@@ -112,9 +113,13 @@ void run(Car car)
 {
 	while (!finish)
 	{
-		if (getch() == 'q')
+		if (car.getLaps() == lapsAmount)
 		{
 			finish = true;
+			attron(COLOR_PAIR(1));
+			mvprintw(20, 30, "%s %d", "THE WINNER IS CAR NR ", car.getID() + 1);
+			attroff(COLOR_PAIR(1));
+			getch();
 			break;
 		}
 		car.driving();
@@ -125,14 +130,11 @@ void run(Car car)
 			car.setPitstopFlag(true);
 		}
 		checkMutex.unlock();
-		//if (car.getY() == 4 && car.getX() == 19)
-		//{
-		//if (rand() % 5 + 1 < 3)
+		if (rand() % 5 + 1 < 2)
 		{
-			car.signalPitstop(&carMutex);
+			car.tiresPitstop(&carMutex);
 			car.refueling();
 		}
-		//}
 	}
 }
 
@@ -147,7 +149,7 @@ int main(int argc, char **argv)
 	nodelay(stdscr, TRUE);
 	readMapFromFile();
 	drawMap();
-
+	int colors[9] = {9, 7, 8, 6, 5, 3, 2, 1, 4};
 	Pitstop pitstop1(1);
 	pitstops[1] = pitstop1;
 	Pitstop pitstop2(2);
@@ -155,10 +157,11 @@ int main(int argc, char **argv)
 	for (int i = 0; i < amountOfCars; i++)
 	{
 		//Car car(i, (rand() % 5) + 1);
-		Car car(i, i);
+		Car car(i, colors[i]);
 		cars[i] = car;
-
-		cars[i].setPrevPitstop(&pitstops[i]);
+		//Pitstop pitstop(i);
+		//pitstops[i] = pitstop;
+		//cars[i].setPrevPitstop(&pitstops[i]);
 		if (i > 0)
 		{
 			cars[i].setNextPitstop(&pitstops[i - 1]);
@@ -167,10 +170,13 @@ int main(int argc, char **argv)
 		{
 			cars[0].setNextPitstop(&pitstops[amountOfCars - 1]);
 		}
-
-		//mvprintw(2 + i * 2, 0, "%s: %d", "Car", i);
+		attron(COLOR_PAIR(2));
+		mvprintw(2 + i, 80, "%d", i + 1);
+		attroff(COLOR_PAIR(2));
 	}
-	//mvprintw(0, 14, "%s %s %s", "Actual state   Fuel (%)", " Pitstops", " Laps");
+	attron(COLOR_PAIR(2));
+	mvprintw(0, 80, "%s  %s %s /%d", "ID", "Pitstops", " Laps", lapsAmount);
+	attroff(COLOR_PAIR(2));
 	refresh();
 
 	for (int i = 0; i < amountOfCars; i++)

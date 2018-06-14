@@ -44,12 +44,13 @@ class Car
 	int getID();
 	int getY();
 	int getX();
+	int getLaps();
 	Pitstop getPrevPitstop();
 	Pitstop getRightPitstop();
 	void setPrevPitstop(Pitstop *Prev);
 	void setNextPitstop(Pitstop *Next);
 	void simulatingLife();
-	void signalPitstop(mutex *mutx);
+	void tiresPitstop(mutex *mutx);
 	bool twoPitstopsEmpty();
 	void refreshStatus(int percent);
 	int getWarning() { return warning; }
